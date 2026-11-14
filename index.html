@@ -48,14 +48,30 @@
 
       <section id="view-channels" class="view" aria-label="Channels" hidden>
         <section class="panel">
+          <h2>YouTube API key</h2>
+          <p class="muted small">
+            Videos are loaded with your own free YouTube Data API v3 key. It is stored only in this
+            browser. Create one in the
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud console</a>
+            and restrict it to your site's HTTP referrer.
+          </p>
+          <form id="api-key-form" class="add-form">
+            <label for="api-key-input">API key</label>
+            <input id="api-key-input" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…" />
+            <button type="submit" class="btn primary">Save key</button>
+            <button id="api-key-clear" type="button" class="btn danger">Remove key</button>
+            <p id="api-key-status" class="status-line"></p>
+          </form>
+        </section>
+        <section class="panel">
           <h2>Add a channel</h2>
           <form id="add-channel-form" class="add-form">
-            <label for="channel-input">Channel ID or /channel/ URL</label>
+            <label for="channel-input">Channel ID, @handle, or channel URL</label>
             <input
               id="channel-input"
               name="channel"
               type="text"
-              placeholder="UC… or https://www.youtube.com/channel/UC…"
+              placeholder="@veritasium, UC…, or https://www.youtube.com/@veritasium"
               autocomplete="off"
             />
             <button type="submit" class="btn primary">Add</button>

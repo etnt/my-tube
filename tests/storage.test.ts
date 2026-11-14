@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   addFavorite,
   getLastVisit,
+  loadApiKey,
   loadFavorites,
+  saveApiKey,
   removeFavorite,
   renameFavorite,
   saveFavorites,
@@ -105,5 +107,16 @@ describe('storage', () => {
     expect(getLastVisit(storage)).toBeNull();
     setLastVisit('2024-06-01T00:00:00.000Z', storage);
     expect(getLastVisit(storage)).toBe('2024-06-01T00:00:00.000Z');
+  });
+});
+
+describe('API key storage', () => {
+  it('saves, trims, and clears the key', () => {
+    const store = new MemoryStorage();
+    expect(loadApiKey(store)).toBe('');
+    saveApiKey('  AIzaKey  ', store);
+    expect(loadApiKey(store)).toBe('AIzaKey');
+    saveApiKey('   ', store);
+    expect(loadApiKey(store)).toBe('');
   });
 });

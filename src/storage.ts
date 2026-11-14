@@ -111,3 +111,25 @@ export function setLastVisit(iso: string, storage: Storage = localStorage): void
     // ignore
   }
 }
+
+export const API_KEY_STORAGE_KEY = 'mytube:apiKey:v1';
+
+/** The YouTube Data API key, kept only in this browser. Empty string if unset. */
+export function loadApiKey(storage: Storage = localStorage): string {
+  try {
+    return storage.getItem(API_KEY_STORAGE_KEY)?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** Save the key, or remove it when the value is blank. */
+export function saveApiKey(key: string, storage: Storage = localStorage): void {
+  try {
+    const trimmed = key.trim();
+    if (trimmed) storage.setItem(API_KEY_STORAGE_KEY, trimmed);
+    else storage.removeItem(API_KEY_STORAGE_KEY);
+  } catch {
+    // storage unavailable: the key lasts only for this page load
+  }
+}

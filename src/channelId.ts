@@ -21,3 +21,19 @@ export function parseChannelInput(input: string): string | null {
 
   return null;
 }
+
+const HANDLE_RE = /^@([A-Za-z0-9._-]{3,30})$/;
+const HANDLE_URL_RE = /^(?:https?:\/\/)?(?:www\.|m\.)?youtube\.com\/@([A-Za-z0-9._-]{3,30})(?:[/?#]|$)/;
+
+/**
+ * Extract a channel handle such as "@veritasium" from a bare handle or a
+ * youtube.com/@handle URL. Returns the handle including the "@", or null.
+ */
+export function parseHandle(input: string): string | null {
+  const trimmed = input.trim();
+  const bare = HANDLE_RE.exec(trimmed);
+  if (bare) return `@${bare[1]}`;
+  const url = HANDLE_URL_RE.exec(trimmed);
+  if (url) return `@${url[1]}`;
+  return null;
+}

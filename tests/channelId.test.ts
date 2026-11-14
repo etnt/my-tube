@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANNEL_ID_RE, parseChannelInput } from '../src/channelId';
+import { CHANNEL_ID_RE, parseChannelInput, parseHandle } from '../src/channelId';
 
 const ID = 'UC1234567890123456789012';
 
@@ -67,5 +67,21 @@ describe('parseChannelInput', () => {
   it('rejects an empty string', () => {
     expect(parseChannelInput('')).toBeNull();
     expect(parseChannelInput('   ')).toBeNull();
+  });
+});
+
+describe('parseHandle', () => {
+  it('accepts bare handles and youtube.com/@handle URLs', () => {
+    expect(parseHandle('@veritasium')).toBe('@veritasium');
+    expect(parseHandle('  @Veritasium  ')).toBe('@Veritasium');
+    expect(parseHandle('https://www.youtube.com/@veritasium')).toBe('@veritasium');
+    expect(parseHandle('https://youtube.com/@veritasium/videos')).toBe('@veritasium');
+  });
+
+  it('rejects other inputs', () => {
+    expect(parseHandle('@ab')).toBeNull();
+    expect(parseHandle('veritasium')).toBeNull();
+    expect(parseHandle('https://evil.example/@veritasium')).toBeNull();
+    expect(parseHandle('https://www.youtube.com/channel/UC1234567890123456789012')).toBeNull();
   });
 });

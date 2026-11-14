@@ -2,15 +2,17 @@ import './style.css';
 import {
   addFavorite,
   getLastVisit,
+  loadApiKey,
   loadFavorites,
   removeFavorite,
   renameFavorite,
+  saveApiKey,
   setLastVisit,
 } from './storage';
-import { fetchChannel } from './feed';
 import { filterByChannel, markNew, mergeVideos } from './merge';
 import { buildDashboard } from './dashboard';
-import { parseChannelInput } from './channelId';
+import { parseChannelInput, parseHandle } from './channelId';
+import { fetchChannelVideos, type ChannelRef } from './youtube';
 import type { FavoriteChannel, FeedResult, FeedStatus, Video } from './types';
 
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
@@ -27,6 +29,7 @@ const state = {
   previousVisit: null as string | null,
   filter: 'all' as string,
   view: 'dashboard' as View,
+  apiKey: '' as string,
   loading: false,
   firstRefreshDone: false,
 };
@@ -45,6 +48,10 @@ const el = {
   form: document.getElementById('add-channel-form') as HTMLFormElement,
   input: document.getElementById('channel-input') as HTMLInputElement,
   addError: document.getElementById('add-error') as HTMLElement,
+  apiKeyForm: document.getElementById('api-key-form') as HTMLFormElement,
+  apiKeyInput: document.getElementById('api-key-input') as HTMLInputElement,
+  apiKeyClear: document.getElementById('api-key-clear') as HTMLButtonElement,
+  apiKeyStatus: document.getElementById('api-key-status') as HTMLElement,
   filter: document.getElementById('channel-filter') as HTMLSelectElement,
   videoCount: document.getElementById('video-count') as HTMLElement,
   channels: document.getElementById('channels') as HTMLUListElement,
@@ -198,6 +205,20 @@ function openChannelVideos(channelId: string): void {
 
 function renderDashboard(): void {
   el.dashboard.textContent = '';
+
+  if (!state.apiKey) {
+    const setup = h('div', 'empty-state');
+    setup.appendChild(h('p', 'empty-title', 'Connect the YouTube API'));
+    setup.appendChild(
+      h('p', 'muted', 'Save a free YouTube Data API key in Channels to load videos. It stays in this browser.'),
+    );
+    const btn = h('button', 'btn primary', 'Open API key settings');
+    btn.type = 'button';
+    btn.addEventListener('click', () => setView('channels'));
+    setup.appendChild(btn);
+    el.dashboard.appendChild(setup);
+    return;
+  }
 
   if (state.favorites.length === 0) {
     const empty = h('div', 'empty-state');
@@ -384,6 +405,10 @@ function renderVideos(): void {
 // ---------- Status and orchestration ----------
 
 function renderStatuses(): void {
+  if (!state.apiKey) {
+    el.lastRefreshed.textContent = 'Add an API key to load videos';
+    return;
+  }
   const latest = [...state.statuses.values()].reduce<number>((max, s) => {
     if (!s.lastSuccess) return max;
     const t = Date.parse(s.lastSuccess);
@@ -407,7 +432,7 @@ function renderAll(): void {
 }
 
 async function refreshAll(): Promise<void> {
-  if (state.loading || state.favorites.length === 0) return;
+  if (!state.apiKey || state.loading || state.favorites.length === 0) return;
   state.loading = true;
   el.refreshBtn.disabled = true;
   renderStatuses();
@@ -415,7 +440,7 @@ async function refreshAll(): Promise<void> {
   const CONCURRENCY = 4;
   const queue = [...state.favorites];
   const runOne = async (fav: FavoriteChannel): Promise<void> => {
-    const result = await fetchChannel(fav.id);
+    const result = await fetchChannelVideos({ channelId: fav.id }, state.apiKey);
     // The channel may have been removed while the request was in flight.
     if (!state.favorites.some((f) => f.id === fav.id)) return;
     state.results.set(fav.id, result);
@@ -454,31 +479,75 @@ el.refreshBtn.addEventListener('click', () => {
   void refreshAll();
 });
 
+function showAddError(message: string): void {
+  el.addError.textContent = message;
+  el.addError.hidden = false;
+}
+
 el.form.addEventListener('submit', async (event) => {
   event.preventDefault();
   el.addError.hidden = true;
-  const id = parseChannelInput(el.input.value);
-  if (!id) {
-    el.addError.textContent =
-      'Could not read that channel. Handles (@name), /user/ and /c/ URLs are not supported — use the /channel/UC… URL or the feed URL with ?channel_id=.';
-    el.addError.hidden = false;
+  const input = el.input.value;
+  const handle = parseHandle(input);
+  const id = handle ? null : parseChannelInput(input);
+  const ref: ChannelRef | null = handle ? { handle } : id ? { channelId: id } : null;
+  if (!ref) {
+    showAddError(
+      'Could not read that channel. Use a channel ID (UC…), a /channel/ URL, or a @handle / youtube.com/@handle URL.',
+    );
     return;
   }
-  if (state.favorites.some((f) => f.id === id)) {
-    el.addError.textContent = 'That channel is already in your favourites.';
-    el.addError.hidden = false;
+  if (!state.apiKey) {
+    showAddError('Save a YouTube API key in the API key settings first.');
     return;
   }
-  const result = await fetchChannel(id);
+  if (id && state.favorites.some((f) => f.id === id)) {
+    showAddError('That channel is already in your favourites.');
+    return;
+  }
+  const result = await fetchChannelVideos(ref, state.apiKey);
   if (!result.ok) {
-    el.addError.textContent = result.error;
-    el.addError.hidden = false;
+    showAddError(result.error);
     return;
   }
-  state.favorites = addFavorite(state.favorites, { id, name: result.channelTitle });
-  state.results.set(id, result);
-  state.statuses.set(id, { lastChecked: new Date().toISOString(), lastSuccess: new Date().toISOString() });
+  const channelId = result.channelId;
+  if (state.favorites.some((f) => f.id === channelId)) {
+    showAddError('That channel is already in your favourites.');
+    return;
+  }
+  state.favorites = addFavorite(state.favorites, { id: channelId, name: result.channelTitle });
+  state.results.set(channelId, result);
+  const now = new Date().toISOString();
+  state.statuses.set(channelId, { lastChecked: now, lastSuccess: now });
   el.input.value = '';
+  renderAll();
+});
+
+// ---------- API key settings ----------
+
+function renderApiKeyStatus(): void {
+  el.apiKeyStatus.textContent = state.apiKey ? 'Key saved in this browser.' : 'No key saved yet.';
+  el.apiKeyClear.disabled = !state.apiKey;
+  el.apiKeyInput.placeholder = state.apiKey ? '•••••••• (saved)' : 'AIza…';
+}
+
+el.apiKeyForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const value = el.apiKeyInput.value.trim();
+  if (!value) return;
+  saveApiKey(value);
+  state.apiKey = value;
+  el.apiKeyInput.value = '';
+  renderApiKeyStatus();
+  void refreshAll();
+  renderAll();
+});
+
+el.apiKeyClear.addEventListener('click', () => {
+  if (!window.confirm('Remove the saved API key from this browser?')) return;
+  saveApiKey('');
+  state.apiKey = '';
+  renderApiKeyStatus();
   renderAll();
 });
 
@@ -507,7 +576,9 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Startup ----------
 
 state.favorites = loadFavorites();
+state.apiKey = loadApiKey();
 state.previousVisit = getLastVisit();
+renderApiKeyStatus();
 applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
 setView(viewFromHash());
 renderAll();
