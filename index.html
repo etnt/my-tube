@@ -1,47 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>my-tube</title>
+    <script>
+      // Apply the saved theme before first paint (dark is the default).
+      (function () {
+        var theme = 'dark';
+        try {
+          if (localStorage.getItem('mytube:theme:v1') === 'light') theme = 'light';
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body>
-    <header>
-      <h1>my-tube</h1>
-      <div class="header-actions">
+    <header class="topbar">
+      <div class="brand"><span class="logo" aria-hidden="true">▶</span><span>my-tube</span></div>
+      <nav class="tabs" aria-label="Main">
+        <button class="tab" type="button" data-view="dashboard">Dashboard</button>
+        <button class="tab" type="button" data-view="videos">Videos</button>
+        <button class="tab" type="button" data-view="channels">Channels</button>
+      </nav>
+      <div class="actions">
         <span id="last-refreshed" class="status-line" role="status"></span>
-        <button id="refresh-btn" type="button">Refresh</button>
+        <button id="refresh-btn" class="btn ghost" type="button">Refresh</button>
+        <button id="theme-btn" class="btn ghost" type="button">Light mode</button>
       </div>
     </header>
 
-    <section id="add-form" aria-label="Add a channel">
-      <form id="add-channel-form">
-        <label for="channel-input">Add channel (ID or /channel/ URL)</label>
-        <input
-          id="channel-input"
-          name="channel"
-          type="text"
-          placeholder="UC… or https://www.youtube.com/channel/UC…"
-          autocomplete="off"
-        />
-        <button type="submit">Add</button>
-        <p id="add-error" class="error-message" hidden></p>
-      </form>
-    </section>
+    <main class="content">
+      <section id="view-dashboard" class="view" aria-label="Dashboard">
+        <div id="dashboard" class="dashboard-grid"></div>
+      </section>
 
-    <section id="filter-bar" aria-label="Filter">
-      <label for="channel-filter">Channel</label>
-      <select id="channel-filter">
-        <option value="all">All channels</option>
-      </select>
-      <span id="video-count" class="status-line"></span>
-    </section>
+      <section id="view-videos" class="view" aria-label="Videos" hidden>
+        <div class="toolbar">
+          <label for="channel-filter">Channel</label>
+          <select id="channel-filter">
+            <option value="all">All channels</option>
+          </select>
+          <span id="video-count" class="status-line"></span>
+        </div>
+        <div id="videos" class="video-grid"></div>
+      </section>
 
-    <section id="channels-section" aria-label="Favourite channels">
-      <ul id="channels"></ul>
-    </section>
-
-    <main id="videos" aria-label="Videos"></main>
+      <section id="view-channels" class="view" aria-label="Channels" hidden>
+        <section class="panel">
+          <h2>Add a channel</h2>
+          <form id="add-channel-form" class="add-form">
+            <label for="channel-input">Channel ID or /channel/ URL</label>
+            <input
+              id="channel-input"
+              name="channel"
+              type="text"
+              placeholder="UC… or https://www.youtube.com/channel/UC…"
+              autocomplete="off"
+            />
+            <button type="submit" class="btn primary">Add</button>
+            <p id="add-error" class="error-message" hidden></p>
+          </form>
+        </section>
+        <section class="panel">
+          <h2>Your channels</h2>
+          <ul id="channels" class="channel-list"></ul>
+        </section>
+      </section>
+    </main>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
