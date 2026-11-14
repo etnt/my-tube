@@ -49,6 +49,11 @@ const el = {
   videoCount: document.getElementById('video-count') as HTMLElement,
   channels: document.getElementById('channels') as HTMLUListElement,
   videos: document.getElementById('videos') as HTMLElement,
+  player: document.getElementById('player') as HTMLDialogElement,
+  playerTitle: document.getElementById('player-title') as HTMLElement,
+  playerFrame: document.getElementById('player-frame') as HTMLIFrameElement,
+  playerOpen: document.getElementById('player-open') as HTMLAnchorElement,
+  playerClose: document.getElementById('player-close') as HTMLButtonElement,
 };
 
 /** Small DOM helper: creates an element with optional class and text. */
@@ -96,6 +101,40 @@ function setSafeLink(a: HTMLAnchorElement, url: string | null): void {
     a.removeAttribute('href');
   }
 }
+
+// ---------- Video player ----------
+
+/** YouTube video IDs are 11 characters from this set. */
+const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+
+/** Opens the video in an in-app dialog using YouTube's privacy-enhanced embed. */
+function openPlayer(video: Video): void {
+  el.playerTitle.textContent = video.title;
+  setSafeLink(el.playerOpen, video.url);
+  el.playerOpen.target = '_blank';
+  if (VIDEO_ID_RE.test(video.id)) {
+    el.playerFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
+    el.playerFrame.hidden = false;
+  } else {
+    el.playerFrame.removeAttribute('src');
+    el.playerFrame.hidden = true;
+  }
+  if (!el.player.open) el.player.showModal();
+}
+
+function closePlayer(): void {
+  el.player.close();
+}
+
+// Stop playback when the dialog closes, however it was closed.
+el.player.addEventListener('close', () => {
+  el.playerFrame.removeAttribute('src');
+});
+el.playerClose.addEventListener('click', closePlayer);
+// The dialog element itself receives clicks on its backdrop, not its content box.
+el.player.addEventListener('click', (event) => {
+  if (event.target === el.player) closePlayer();
+});
 
 function channelDisplayName(f: FavoriteChannel): string {
   return f.customLabel || f.name;
@@ -195,9 +234,9 @@ function renderDashboard(): void {
       body.appendChild(age);
       body.appendChild(h('span', 'muted small', 'since latest upload'));
 
-      const title = h('a', 'latest-title', latest.title);
-      setSafeLink(title, latest.url);
-      title.target = '_blank';
+      const title = h('button', 'latest-title', latest.title);
+      title.type = 'button';
+      title.addEventListener('click', () => openPlayer(latest));
       body.appendChild(title);
 
       if (state.previousVisit && Date.parse(latest.published) > Date.parse(state.previousVisit)) {
@@ -294,23 +333,24 @@ function renderFilter(): void {
 function renderVideoCard(video: Video & { isNew: boolean }): HTMLElement {
   const card = h('article', 'video-card');
 
-  const thumbLink = h('a', 'video-thumb-link');
-  setSafeLink(thumbLink, video.url);
-  thumbLink.target = '_blank';
+  const thumbBtn = h('button', 'video-thumb-link');
+  thumbBtn.type = 'button';
+  thumbBtn.setAttribute('aria-label', `Play ${video.title}`);
+  thumbBtn.addEventListener('click', () => openPlayer(video));
   const thumb = h('img', 'video-thumb');
   if (video.thumbnail && video.thumbnail.startsWith('https://')) {
     thumb.src = video.thumbnail;
   }
   thumb.alt = '';
   thumb.loading = 'lazy';
-  thumbLink.appendChild(thumb);
-  card.appendChild(thumbLink);
+  thumbBtn.appendChild(thumb);
+  card.appendChild(thumbBtn);
 
   const meta = h('div', 'video-meta');
-  const titleLink = h('a', 'video-title', video.title);
-  setSafeLink(titleLink, video.url);
-  titleLink.target = '_blank';
-  meta.appendChild(titleLink);
+  const titleBtn = h('button', 'video-title', video.title);
+  titleBtn.type = 'button';
+  titleBtn.addEventListener('click', () => openPlayer(video));
+  meta.appendChild(titleBtn);
   meta.appendChild(h('span', 'video-channel', video.channelName ?? video.channelId));
 
   const line = h('div', 'video-line');

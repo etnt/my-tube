@@ -69,6 +69,27 @@
       </section>
     </main>
 
+    <dialog id="player" class="player" aria-labelledby="player-title">
+      <div class="player-box">
+        <header class="player-head">
+          <h2 id="player-title" class="player-title"></h2>
+          <button id="player-close" class="btn ghost small" type="button">Close</button>
+        </header>
+        <div class="player-frame">
+          <iframe
+            id="player-frame"
+            title="Video player"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        </div>
+        <footer class="player-foot">
+          <a id="player-open" class="btn ghost small" target="_blank">Open on YouTube</a>
+        </footer>
+      </div>
+    </dialog>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
