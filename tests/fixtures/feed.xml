@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UC1234567890123456789012"/>
+ <id>yt:channel:UC1234567890123456789012</id>
+ <yt:channelId>UC1234567890123456789012</yt:channelId>
+ <title>Sample Channel &amp; Friends</title>
+ <link rel="alternate" href="http://www.youtube.com/channel/UC1234567890123456789012"/>
+ <author>
+  <name>Sample Channel &amp; Friends</name>
+  <uri>http://www.youtube.com/channel/UC1234567890123456789012</uri>
+ </author>
+ <published>2023-01-01T00:00:00+00:00</published>
+ <entry>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=vidA000000000000000001"/>
+  <author>
+   <name>Sample Channel &amp; Friends</name>
+   <uri>http://www.youtube.com/channel/UC1234567890123456789012</uri>
+  </author>
+  <published>2024-06-03T10:00:00+00:00</published>
+  <updated>2024-06-03T10:00:00+00:00</updated>
+  <title>First &lt;Video&gt; &amp; &quot;Quotes&quot;</title>
+  <content type="text">First video description</content>
+  <id>yt:video:vidA000000000000000001</id>
+  <yt:videoId>vidA000000000000000001</yt:videoId>
+  <media:group>
+   <media:title>First &lt;Video&gt; &amp; &quot;Quotes&quot;</media:title>
+   <media:content url="https://www.youtube.com/v/vidA000000000000000001" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i.ytimg.com/vi/vidA000000000000000001/hqdefault.jpg" width="480" height="360"/>
+   <media:description>First video description</media:description>
+   <media:community>
+    <media:starRating count="10" average="5.00" min="1" max="5"/>
+    <media:statistics views="100"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=vidB000000000000000002"/>
+  <author>
+   <name>Sample Channel &amp; Friends</name>
+   <uri>http://www.youtube.com/channel/UC1234567890123456789012</uri>
+  </author>
+  <published>2024-06-01T08:30:00+00:00</published>
+  <updated>2024-06-01T08:30:00+00:00</updated>
+  <title>Second video</title>
+  <content type="text">Second video description</content>
+  <id>yt:video:vidB000000000000000002</id>
+  <yt:videoId>vidB000000000000000002</yt:videoId>
+  <media:group>
+   <media:title>Second video</media:title>
+   <media:content url="https://www.youtube.com/v/vidB000000000000000002" type="application/x-shockwave-flash" width="640" height="360"/>
+   <media:thumbnail url="https://i.ytimg.com/vi/vidB000000000000000002/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Second video description</media:description>
+   <media:community>
+    <media:starRating count="3" average="4.00" min="1" max="5"/>
+    <media:statistics views="42"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <published>2024-05-20T12:00:00+00:00</published>
+  <updated>2024-05-20T12:00:00+00:00</updated>
+  <title>Entry without an id should be skipped</title>
+  <content type="text">No yt:videoId here</content>
+ </entry>
+ <entry>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=vidC000000000000000003"/>
+  <author>
+   <name>Sample Channel &amp; Friends</name>
+   <uri>http://www.youtube.com/channel/UC1234567890123456789012</uri>
+  </author>
+  <published>2024-05-15T09:15:00+00:00</published>
+  <updated>2024-05-15T09:15:00+00:00</updated>
+  <title>Third video</title>
+  <content type="text">Third video description</content>
+  <id>yt:video:vidC000000000000000003</id>
+  <yt:videoId>vidC000000000000000003</yt:videoId>
+  <media:group>
+   <media:title>Third video</media:title>
+   <media:content url="https://www.youtube.com/v/vidC000000000000000003" type="application/x-shockwave-flash" width="640" height="360"/>
+   <media:thumbnail url="https://i.ytimg.com/vi/vidC000000000000000003/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Third video description</media:description>
+   <media:community>
+    <media:starRating count="1" average="5.00" min="1" max="5"/>
+    <media:statistics views="7"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>
