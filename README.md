@@ -25,8 +25,12 @@ that you can host on GitHub Pages. All your data stays in your browser.
 1. Open the [Google Cloud console](https://console.cloud.google.com/), create a
    project, and enable **YouTube Data API v3** under *APIs & Services → Library*.
 2. Under *APIs & Services → Credentials*, choose **Create credentials → API key**.
-3. Edit the key and set **Application restrictions → Websites** to your site,
-   for example `https://<your-user>.github.io/*`. Under **API restrictions**,
+3. Edit the key and set **Application restrictions → Websites**. Add
+   `https://<your-user>.github.io/*`, for example `https://etnt.github.io/*`.
+   The `/*` must be on the site origin, not on the project path such as
+   `/my-tube/`: browsers send only the origin as the referrer on cross-origin
+   requests, so a path-specific entry is rejected with a 403. For local
+   testing, also add `http://localhost:5173/*`. Under **API restrictions**,
    allow only *YouTube Data API v3*.
 4. In my-tube, open **Channels → YouTube API key**, paste the key, and save.
 
