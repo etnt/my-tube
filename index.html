@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>my-tube</title>
+  </head>
+  <body>
+    <header>
+      <h1>my-tube</h1>
+      <div class="header-actions">
+        <span id="last-refreshed" class="status-line" role="status"></span>
+        <button id="refresh-btn" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <section id="add-form" aria-label="Add a channel">
+      <form id="add-channel-form">
+        <label for="channel-input">Add channel (ID or /channel/ URL)</label>
+        <input
+          id="channel-input"
+          name="channel"
+          type="text"
+          placeholder="UC… or https://www.youtube.com/channel/UC…"
+          autocomplete="off"
+        />
+        <button type="submit">Add</button>
+        <p id="add-error" class="error-message" hidden></p>
+      </form>
+    </section>
+
+    <section id="filter-bar" aria-label="Filter">
+      <label for="channel-filter">Channel</label>
+      <select id="channel-filter">
+        <option value="all">All channels</option>
+      </select>
+      <span id="video-count" class="status-line"></span>
+    </section>
+
+    <section id="channels-section" aria-label="Favourite channels">
+      <ul id="channels"></ul>
+    </section>
+
+    <main id="videos" aria-label="Videos"></main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
