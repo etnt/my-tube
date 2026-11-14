@@ -7,6 +7,14 @@ new since your last visit, and plays videos in a pop-up.
 It is a **static site**: no server and no database. It runs as one HTML file
 that you can host on GitHub Pages. All your data stays in your browser.
 
+## Screenshots
+
+<a href="screenshots/dashboard.jpeg"><img src="screenshots/dashboard.jpeg" alt="Dashboard screenshot" width="19%"></a>
+<a href="screenshots/popup.jpeg"><img src="screenshots/popup.jpeg" alt="Pop-Up screenshot" width="19%"></a>
+<a href="screenshots/all_videos.jpeg"><img src="screenshots/all_videos.jpeg" alt="All videos screenshot" width="19%"></a>
+<a href="screenshots/channels.jpeg"><img src="screenshots/channels.jpeg" alt="Channels screenshot" width="19%"></a>
+
+
 ## How it works
 
 - **Data source:** the [YouTube Data API v3](https://developers.google.com/youtube/v3),
