@@ -33,7 +33,7 @@ falls back to `index.html`.
 
 ```sh
 npm install
-npm run dev            # client on http://localhost:5173, API on http://localhost:3001
+npm run dev            # client on http://localhost:5173, API on http://127.0.0.1:3001
 npm run build && npm start   # production: one process serves dist/ + /api on :3001
 npm test               # vitest run
 ```
