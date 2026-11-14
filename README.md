@@ -74,6 +74,8 @@ You can also give a channel a custom label after adding it with **Rename**.
 
 ## Security notes
 
+- The server is **local-only**: it listens on `127.0.0.1` (loopback) by
+  default, so it is not reachable from other machines on your network.
 - The endpoint only accepts IDs matching `^UC[\w-]{22}$` and only fetches the
   fixed YouTube feed URL, so the server cannot be used as an open proxy.
 - Upstream fetches use `redirect: 'error'` and an 8-second timeout.

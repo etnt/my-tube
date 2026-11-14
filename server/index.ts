@@ -37,7 +37,8 @@ const isDirectRun =
 
 if (isDirectRun) {
   const port = Number(process.env.PORT) || 3001;
-  createApp().listen(port, () => {
-    console.log(`my-tube server listening on http://localhost:${port}`);
+  // Local-only: bind to loopback so the proxy is not exposed to the network.
+  createApp().listen(port, '127.0.0.1', () => {
+    console.log(`my-tube server listening on http://127.0.0.1:${port}`);
   });
 }

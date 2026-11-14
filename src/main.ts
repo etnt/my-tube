@@ -133,7 +133,10 @@ function renderFilter(): void {
 
 function renderVideos(): void {
   el.videos.textContent = '';
-  const merged = mergeVideos([...state.results.values()]);
+  const favoriteIds = new Set(state.favorites.map((f) => f.id));
+  const merged = mergeVideos(
+    [...state.results.values()].filter((r) => favoriteIds.has(r.channelId)),
+  );
   const filtered = filterByChannel(merged, state.filter);
   const marked = markNew(filtered, state.previousVisit);
   el.videoCount.textContent = `${filtered.length} video${filtered.length === 1 ? '' : 's'}`;
@@ -155,7 +158,9 @@ function renderVideos(): void {
     link.target = '_blank';
     const thumb = document.createElement('img');
     thumb.className = 'video-thumb';
-    if (video.thumbnail) thumb.src = video.thumbnail;
+    if (video.thumbnail && video.thumbnail.startsWith('https://')) {
+      thumb.src = video.thumbnail;
+    }
     thumb.alt = '';
     thumb.loading = 'lazy';
     link.appendChild(thumb);
@@ -225,6 +230,8 @@ async function refreshAll(): Promise<void> {
   const queue = [...state.favorites];
   const runOne = async (fav: FavoriteChannel): Promise<void> => {
     const result = await fetchChannel(fav.id);
+    // The channel may have been removed while the request was in flight.
+    if (!state.favorites.some((f) => f.id === fav.id)) return;
     state.results.set(fav.id, result);
     const nowIso = new Date().toISOString();
     const prev = state.statuses.get(fav.id) ?? {};
@@ -249,7 +256,9 @@ async function refreshAll(): Promise<void> {
   el.refreshBtn.disabled = false;
   if (!state.firstRefreshDone) {
     state.firstRefreshDone = true;
-    setLastVisit(new Date().toISOString());
+    if ([...state.results.values()].some((r) => r.ok)) {
+      setLastVisit(new Date().toISOString());
+    }
     state.previousVisit = state.previousVisit ?? new Date().toISOString();
   }
   renderAll();
@@ -316,10 +325,4 @@ state.previousVisit = getLastVisit();
 renderAll();
 void refreshAll().then(() => {
   lastRefreshAt = Date.now();
-});
-
-window.addEventListener('pagehide', () => {
-  if (!state.firstRefreshDone && state.loading) {
-    setLastVisit(new Date().toISOString());
-  }
 });
