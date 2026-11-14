@@ -7,6 +7,8 @@ new since your last visit, and plays videos in a pop-up.
 It is a **static site**: no server and no database. It runs as one HTML file
 that you can host on GitHub Pages. All your data stays in your browser.
 
+You'll find it here: [https://etnt.github.io/my-tube/](https://etnt.github.io/my-tube/)
+
 ## Screenshots
 
 <a href="screenshots/dashboard.jpeg"><img src="screenshots/dashboard.jpeg" alt="Dashboard screenshot" width="19%"></a>
