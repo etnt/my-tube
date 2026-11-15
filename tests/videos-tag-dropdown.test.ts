@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-describe('tag dropdown on the Channels page', () => {
-  it('shows the dropdown and hides the chip bar on #channels', async () => {
+describe('tag dropdown on the Videos page', () => {
+  it('shows the dropdown beside the channel filter and hides the chip bar on #videos', async () => {
     const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
     const body = html.match(/<body>([\s\S]*)<\/body>/)?.[1] ?? '';
     document.body.innerHTML = body;
@@ -16,7 +16,7 @@ describe('tag dropdown on the Channels page', () => {
         { id: 'UCBBBBBBBBBBBBBBBBBBBBBB', name: 'Beta', addedAt: '2024-01-01T00:00:00Z', tags: ['History'] },
       ]),
     );
-    location.hash = '#channels';
+    location.hash = '#videos';
 
     await import('../src/main');
 

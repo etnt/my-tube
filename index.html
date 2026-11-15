@@ -44,6 +44,12 @@
           <select id="channel-filter">
             <option value="all">All channels</option>
           </select>
+          <div id="tag-select-wrap" class="tag-select-wrap" hidden>
+            <label for="channel-tag-select">Tag</label>
+            <select id="channel-tag-select">
+              <option value="all">All tags</option>
+            </select>
+          </div>
           <span id="video-count" class="status-line"></span>
         </div>
         <div id="videos" class="video-grid"></div>
@@ -85,15 +91,7 @@
           </form>
         </section>
         <section class="panel">
-          <div class="panel-head">
-            <h2>Your channels</h2>
-            <div id="tag-select-wrap" class="tag-select-wrap" hidden>
-              <label for="channel-tag-select">Tag</label>
-              <select id="channel-tag-select">
-                <option value="all">All tags</option>
-              </select>
-            </div>
-          </div>
+          <h2>Your channels</h2>
           <ul id="channels" class="channel-list"></ul>
         </section>
       </section>

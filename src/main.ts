@@ -210,7 +210,7 @@ function visibleFavorites(): FavoriteChannel[] {
   return favoritesWithTag(state.favorites, state.tagFilter);
 }
 
-/** Shows the tag filter on the Channels page as a dropdown, and keeps it in sync with the chip bar. */
+/** Fills the tag dropdown on the Videos page and keeps it in sync with the chip bar. */
 function renderTagSelect(tags: { tag: string; count: number }[]): void {
   el.tagSelect.textContent = '';
   el.tagSelect.appendChild(new Option('All tags', 'all'));
@@ -229,7 +229,8 @@ function renderTagBar(): void {
   }
   renderTagSelect(tags);
   el.tagBar.textContent = '';
-  el.tagBar.hidden = tags.length === 0 || state.view === 'channels';
+  // The chip bar is for the Dashboard; the Videos page uses the dropdown instead.
+  el.tagBar.hidden = tags.length === 0 || state.view !== 'dashboard';
   if (el.tagBar.hidden) return;
 
   const makeChip = (label: string, count: number, active: boolean, onClick: () => void): HTMLButtonElement => {
@@ -406,12 +407,7 @@ function renderChannelList(): void {
     el.channels.appendChild(h('li', 'muted', 'No channels added yet.'));
     return;
   }
-  const shown = visibleFavorites();
-  if (shown.length === 0) {
-    el.channels.appendChild(h('li', 'muted', 'No channels with this tag.'));
-    return;
-  }
-  for (const fav of shown) {
+  for (const fav of state.favorites) {
     const li = h('li', 'channel-row');
     const info = h('div', 'channel-info');
     info.appendChild(h('span', 'channel-name', channelDisplayName(fav)));
