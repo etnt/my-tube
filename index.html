@@ -85,7 +85,15 @@
           </form>
         </section>
         <section class="panel">
-          <h2>Your channels</h2>
+          <div class="panel-head">
+            <h2>Your channels</h2>
+            <div class="tag-select-wrap">
+              <label for="channel-tag-select">Tag</label>
+              <select id="channel-tag-select" hidden>
+                <option value="all">All tags</option>
+              </select>
+            </div>
+          </div>
           <ul id="channels" class="channel-list"></ul>
         </section>
       </section>

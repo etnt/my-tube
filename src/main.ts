@@ -67,6 +67,7 @@ const el = {
   channels: document.getElementById('channels') as HTMLUListElement,
   videos: document.getElementById('videos') as HTMLElement,
   tagBar: document.getElementById('tag-bar') as HTMLElement,
+  tagSelect: document.getElementById('channel-tag-select') as HTMLSelectElement,
   player: document.getElementById('player') as HTMLDialogElement,
   playerTitle: document.getElementById('player-title') as HTMLElement,
   playerFrame: document.getElementById('player-frame') as HTMLIFrameElement,
@@ -208,12 +209,24 @@ function visibleFavorites(): FavoriteChannel[] {
   return favoritesWithTag(state.favorites, state.tagFilter);
 }
 
+/** Shows the tag filter on the Channels page as a dropdown, and keeps it in sync with the chip bar. */
+function renderTagSelect(tags: { tag: string; count: number }[]): void {
+  el.tagSelect.textContent = '';
+  el.tagSelect.appendChild(new Option('All tags', 'all'));
+  for (const { tag, count } of tags) {
+    el.tagSelect.appendChild(new Option(`${tag} (${count})`, tag));
+  }
+  el.tagSelect.hidden = tags.length === 0;
+  el.tagSelect.value = state.tagFilter ?? 'all';
+}
+
 function renderTagBar(): void {
   const tags = listTags(state.favorites);
   // Forget a filter whose tag no longer exists (for example after the last such channel was removed).
   if (state.tagFilter !== null && !tags.some((t) => t.tag.toLowerCase() === state.tagFilter?.toLowerCase())) {
     state.tagFilter = null;
   }
+  renderTagSelect(tags);
   el.tagBar.textContent = '';
   el.tagBar.hidden = tags.length === 0 || state.view === 'channels';
   if (el.tagBar.hidden) return;
@@ -392,7 +405,12 @@ function renderChannelList(): void {
     el.channels.appendChild(h('li', 'muted', 'No channels added yet.'));
     return;
   }
-  for (const fav of state.favorites) {
+  const shown = visibleFavorites();
+  if (shown.length === 0) {
+    el.channels.appendChild(h('li', 'muted', 'No channels with this tag.'));
+    return;
+  }
+  for (const fav of shown) {
     const li = h('li', 'channel-row');
     const info = h('div', 'channel-info');
     info.appendChild(h('span', 'channel-name', channelDisplayName(fav)));
@@ -668,6 +686,11 @@ el.apiKeyClear.addEventListener('click', () => {
   saveApiKey('');
   state.apiKey = '';
   renderApiKeyStatus();
+  renderAll();
+});
+
+el.tagSelect.addEventListener('change', () => {
+  state.tagFilter = el.tagSelect.value === 'all' ? null : el.tagSelect.value;
   renderAll();
 });
 
