@@ -67,6 +67,7 @@ const el = {
   channels: document.getElementById('channels') as HTMLUListElement,
   videos: document.getElementById('videos') as HTMLElement,
   tagBar: document.getElementById('tag-bar') as HTMLElement,
+  tagSelectWrap: document.getElementById('tag-select-wrap') as HTMLElement,
   tagSelect: document.getElementById('channel-tag-select') as HTMLSelectElement,
   player: document.getElementById('player') as HTMLDialogElement,
   playerTitle: document.getElementById('player-title') as HTMLElement,
@@ -216,7 +217,7 @@ function renderTagSelect(tags: { tag: string; count: number }[]): void {
   for (const { tag, count } of tags) {
     el.tagSelect.appendChild(new Option(`${tag} (${count})`, tag));
   }
-  el.tagSelect.hidden = tags.length === 0;
+  el.tagSelectWrap.hidden = tags.length === 0;
   el.tagSelect.value = state.tagFilter ?? 'all';
 }
 
