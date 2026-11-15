@@ -612,36 +612,6 @@ select:focus {
 
 /* ---------- Tags ---------- */
 
-.tag-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 1.25rem;
-}
-
-.tag-filter {
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
-}
-
-.tag-filter:hover {
-  color: var(--fg);
-}
-
-.tag-filter[aria-pressed='true'] {
-  color: #fff;
-  background: var(--accent);
-  border-color: transparent;
-}
-
 .tag-list {
   display: flex;
   flex-wrap: wrap;

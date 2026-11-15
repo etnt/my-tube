@@ -32,9 +32,16 @@
     </header>
 
     <main class="content">
-      <nav id="tag-bar" class="tag-bar" aria-label="Filter by tag" hidden></nav>
 
       <section id="view-dashboard" class="view" aria-label="Dashboard">
+        <div class="toolbar">
+          <div class="tag-select-wrap" hidden>
+            <label for="dashboard-tag-select">Tag</label>
+            <select id="dashboard-tag-select" class="tag-select">
+              <option value="all">All tags</option>
+            </select>
+          </div>
+        </div>
         <div id="dashboard" class="dashboard-grid"></div>
       </section>
 
@@ -44,9 +51,9 @@
           <select id="channel-filter">
             <option value="all">All channels</option>
           </select>
-          <div id="tag-select-wrap" class="tag-select-wrap" hidden>
+          <div class="tag-select-wrap" hidden>
             <label for="channel-tag-select">Tag</label>
-            <select id="channel-tag-select">
+            <select id="channel-tag-select" class="tag-select">
               <option value="all">All tags</option>
             </select>
           </div>

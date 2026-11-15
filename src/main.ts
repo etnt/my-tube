@@ -66,9 +66,9 @@ const el = {
   videoCount: document.getElementById('video-count') as HTMLElement,
   channels: document.getElementById('channels') as HTMLUListElement,
   videos: document.getElementById('videos') as HTMLElement,
-  tagBar: document.getElementById('tag-bar') as HTMLElement,
-  tagSelectWrap: document.getElementById('tag-select-wrap') as HTMLElement,
-  tagSelect: document.getElementById('channel-tag-select') as HTMLSelectElement,
+  /** Tag dropdowns on the Dashboard and Videos pages; they always show the same choice. */
+  tagSelectWraps: [...document.querySelectorAll<HTMLElement>('.tag-select-wrap')],
+  tagSelects: [...document.querySelectorAll<HTMLSelectElement>('.tag-select')],
   player: document.getElementById('player') as HTMLDialogElement,
   playerTitle: document.getElementById('player-title') as HTMLElement,
   playerFrame: document.getElementById('player-frame') as HTMLIFrameElement,
@@ -200,7 +200,7 @@ function setView(view: View): void {
   if (location.hash !== `#${view}`) {
     history.replaceState(null, '', `#${view}`);
   }
-  renderTagBar();
+  renderTagControls();
 }
 
 // ---------- Tags ----------
@@ -210,52 +210,28 @@ function visibleFavorites(): FavoriteChannel[] {
   return favoritesWithTag(state.favorites, state.tagFilter);
 }
 
-/** Fills the tag dropdown on the Videos page and keeps it in sync with the chip bar. */
+/** Fills the tag dropdowns on the Dashboard and Videos pages. */
 function renderTagSelect(tags: { tag: string; count: number }[]): void {
-  el.tagSelect.textContent = '';
-  el.tagSelect.appendChild(new Option('All tags', 'all'));
-  for (const { tag, count } of tags) {
-    el.tagSelect.appendChild(new Option(`${tag} (${count})`, tag));
+  for (const select of el.tagSelects) {
+    select.textContent = '';
+    select.appendChild(new Option('All tags', 'all'));
+    for (const { tag, count } of tags) {
+      select.appendChild(new Option(`${tag} (${count})`, tag));
+    }
+    select.value = state.tagFilter ?? 'all';
   }
-  el.tagSelectWrap.hidden = tags.length === 0;
-  el.tagSelect.value = state.tagFilter ?? 'all';
+  for (const wrap of el.tagSelectWraps) {
+    wrap.hidden = tags.length === 0;
+  }
 }
 
-function renderTagBar(): void {
+function renderTagControls(): void {
   const tags = listTags(state.favorites);
   // Forget a filter whose tag no longer exists (for example after the last such channel was removed).
   if (state.tagFilter !== null && !tags.some((t) => t.tag.toLowerCase() === state.tagFilter?.toLowerCase())) {
     state.tagFilter = null;
   }
   renderTagSelect(tags);
-  el.tagBar.textContent = '';
-  // The chip bar is for the Dashboard; the Videos page uses the dropdown instead.
-  el.tagBar.hidden = tags.length === 0 || state.view !== 'dashboard';
-  if (el.tagBar.hidden) return;
-
-  const makeChip = (label: string, count: number, active: boolean, onClick: () => void): HTMLButtonElement => {
-    const btn = h('button', 'tag-filter', `${label} (${count})`);
-    btn.type = 'button';
-    btn.setAttribute('aria-pressed', String(active));
-    btn.addEventListener('click', onClick);
-    return btn;
-  };
-
-  el.tagBar.appendChild(
-    makeChip('All', state.favorites.length, state.tagFilter === null, () => {
-      state.tagFilter = null;
-      renderAll();
-    }),
-  );
-  for (const { tag, count } of tags) {
-    const active = state.tagFilter !== null && state.tagFilter.toLowerCase() === tag.toLowerCase();
-    el.tagBar.appendChild(
-      makeChip(tag, count, active, () => {
-        state.tagFilter = active ? null : tag;
-        renderAll();
-      }),
-    );
-  }
 }
 
 /** Tag chips with remove buttons, plus a small form to add tags (comma-separated). */
@@ -541,7 +517,7 @@ function renderStatuses(): void {
 }
 
 function renderAll(): void {
-  renderTagBar();
+  renderTagControls();
   renderDashboard();
   renderChannelList();
   renderFilter();
@@ -686,10 +662,12 @@ el.apiKeyClear.addEventListener('click', () => {
   renderAll();
 });
 
-el.tagSelect.addEventListener('change', () => {
-  state.tagFilter = el.tagSelect.value === 'all' ? null : el.tagSelect.value;
-  renderAll();
-});
+for (const select of el.tagSelects) {
+  select.addEventListener('change', () => {
+    state.tagFilter = select.value === 'all' ? null : select.value;
+    renderAll();
+  });
+}
 
 el.filter.addEventListener('change', () => {
   state.filter = el.filter.value;
