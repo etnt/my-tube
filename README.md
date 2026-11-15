@@ -58,6 +58,13 @@ Any of these work:
 
 Use **Rename** to give a channel a shorter label.
 
+## Tags
+
+In **Channels**, add one or more tags to a channel (comma-separated, for example
+`Science, History`). Tags appear as a filter bar on the Dashboard and Videos
+tabs, so you can show only, say, all *Science* channels. Tags are stored in your
+browser with the rest of your data and are not case-sensitive.
+
 ## Deploy to GitHub Pages
 
 1. Push this repository to GitHub.

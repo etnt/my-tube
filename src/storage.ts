@@ -1,4 +1,5 @@
 import type { FavoriteChannel } from './types';
+import { normalizeTags } from './tags';
 
 export const FAVORITES_KEY = 'mytube:favorites:v1';
 export const LAST_VISIT_KEY = 'mytube:lastVisit:v1';
@@ -23,12 +24,21 @@ export function loadFavorites(storage: Storage = localStorage): FavoriteChannel[
         typeof (item as { name?: unknown }).name === 'string' &&
         typeof (item as { addedAt?: unknown }).addedAt === 'string'
       ) {
-        const rec = item as { id: string; name: string; addedAt: string; customLabel?: unknown };
+        const rec = item as {
+          id: string;
+          name: string;
+          addedAt: string;
+          customLabel?: unknown;
+          tags?: unknown;
+        };
         out.push({
           id: rec.id,
           name: rec.name,
           addedAt: rec.addedAt,
           ...(typeof rec.customLabel === 'string' ? { customLabel: rec.customLabel } : {}),
+          ...(Array.isArray(rec.tags)
+            ? { tags: normalizeTags(rec.tags.filter((t): t is string => typeof t === 'string')) }
+            : {}),
         });
       }
     }
@@ -66,6 +76,23 @@ export function addFavorite(
       addedAt: channel.addedAt ?? new Date().toISOString(),
     },
   ];
+  saveFavorites(next, storage);
+  return next;
+}
+
+/** Replace a channel's tags. Tags are normalised; an empty list clears them. */
+export function setFavoriteTags(
+  favorites: FavoriteChannel[],
+  id: string,
+  tags: string[],
+  storage: Storage = localStorage,
+): FavoriteChannel[] {
+  const cleaned = normalizeTags(tags);
+  const next = favorites.map((f) => {
+    if (f.id !== id) return f;
+    const { tags: _previous, ...rest } = f;
+    return cleaned.length > 0 ? { ...rest, tags: cleaned } : rest;
+  });
   saveFavorites(next, storage);
   return next;
 }

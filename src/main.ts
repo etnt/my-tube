@@ -7,11 +7,13 @@ import {
   removeFavorite,
   renameFavorite,
   saveApiKey,
+  setFavoriteTags,
   setLastVisit,
 } from './storage';
 import { filterByChannel, markNew, mergeVideos } from './merge';
 import { buildDashboard } from './dashboard';
 import { parseChannelInput, parseHandle } from './channelId';
+import { favoritesWithTag, listTags, normalizeTags } from './tags';
 import { fetchChannelVideos, type ChannelRef } from './youtube';
 import type { FavoriteChannel, FeedResult, FeedStatus, Video } from './types';
 
@@ -30,6 +32,8 @@ const state = {
   filter: 'all' as string,
   view: 'dashboard' as View,
   apiKey: '' as string,
+  /** Tag used to filter channels on the dashboard and videos; null shows all. */
+  tagFilter: null as string | null,
   loading: false,
   firstRefreshDone: false,
 };
@@ -52,10 +56,14 @@ const el = {
   apiKeyInput: document.getElementById('api-key-input') as HTMLInputElement,
   apiKeyClear: document.getElementById('api-key-clear') as HTMLButtonElement,
   apiKeyStatus: document.getElementById('api-key-status') as HTMLElement,
+  apiHelpBtn: document.getElementById('api-help-btn') as HTMLButtonElement,
+  apiHelp: document.getElementById('api-help') as HTMLDialogElement,
+  apiHelpClose: document.getElementById('api-help-close') as HTMLButtonElement,
   filter: document.getElementById('channel-filter') as HTMLSelectElement,
   videoCount: document.getElementById('video-count') as HTMLElement,
   channels: document.getElementById('channels') as HTMLUListElement,
   videos: document.getElementById('videos') as HTMLElement,
+  tagBar: document.getElementById('tag-bar') as HTMLElement,
   player: document.getElementById('player') as HTMLDialogElement,
   playerTitle: document.getElementById('player-title') as HTMLElement,
   playerFrame: document.getElementById('player-frame') as HTMLIFrameElement,
@@ -187,6 +195,86 @@ function setView(view: View): void {
   if (location.hash !== `#${view}`) {
     history.replaceState(null, '', `#${view}`);
   }
+  renderTagBar();
+}
+
+// ---------- Tags ----------
+
+/** Channels that pass the current tag filter. */
+function visibleFavorites(): FavoriteChannel[] {
+  return favoritesWithTag(state.favorites, state.tagFilter);
+}
+
+function renderTagBar(): void {
+  const tags = listTags(state.favorites);
+  // Forget a filter whose tag no longer exists (for example after the last such channel was removed).
+  if (state.tagFilter !== null && !tags.some((t) => t.tag.toLowerCase() === state.tagFilter?.toLowerCase())) {
+    state.tagFilter = null;
+  }
+  el.tagBar.textContent = '';
+  el.tagBar.hidden = tags.length === 0 || state.view === 'channels';
+  if (el.tagBar.hidden) return;
+
+  const makeChip = (label: string, count: number, active: boolean, onClick: () => void): HTMLButtonElement => {
+    const btn = h('button', 'tag-filter', `${label} (${count})`);
+    btn.type = 'button';
+    btn.setAttribute('aria-pressed', String(active));
+    btn.addEventListener('click', onClick);
+    return btn;
+  };
+
+  el.tagBar.appendChild(
+    makeChip('All', state.favorites.length, state.tagFilter === null, () => {
+      state.tagFilter = null;
+      renderAll();
+    }),
+  );
+  for (const { tag, count } of tags) {
+    const active = state.tagFilter !== null && state.tagFilter.toLowerCase() === tag.toLowerCase();
+    el.tagBar.appendChild(
+      makeChip(tag, count, active, () => {
+        state.tagFilter = active ? null : tag;
+        renderAll();
+      }),
+    );
+  }
+}
+
+/** Tag chips with remove buttons, plus a small form to add tags (comma-separated). */
+function renderTagEditor(fav: FavoriteChannel): HTMLElement {
+  const box = h('div', 'tag-editor');
+  const chips = h('div', 'tag-list');
+  for (const tag of fav.tags ?? []) {
+    const chip = h('span', 'tag-chip', tag);
+    const remove = h('button', 'tag-remove', '×');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', `Remove tag ${tag}`);
+    remove.addEventListener('click', () => {
+      const remaining = (fav.tags ?? []).filter((t) => t !== tag);
+      state.favorites = setFavoriteTags(state.favorites, fav.id, remaining);
+      renderAll();
+    });
+    chip.appendChild(remove);
+    chips.appendChild(chip);
+  }
+  box.appendChild(chips);
+
+  const form = h('form', 'tag-form');
+  const input = h('input');
+  input.type = 'text';
+  input.placeholder = 'Add tags, e.g. Science';
+  input.setAttribute('aria-label', `Add tags to ${channelDisplayName(fav)}`);
+  const addBtn = h('button', 'btn ghost small', 'Add tag');
+  addBtn.type = 'submit';
+  form.append(input, addBtn);
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const added = input.value.split(',');
+    state.favorites = setFavoriteTags(state.favorites, fav.id, normalizeTags([...(fav.tags ?? []), ...added]));
+    renderAll();
+  });
+  box.appendChild(form);
+  return box;
 }
 
 for (const btn of el.navButtons) {
@@ -220,6 +308,11 @@ function renderDashboard(): void {
     return;
   }
 
+  if (state.favorites.length > 0 && visibleFavorites().length === 0) {
+    el.dashboard.appendChild(h('p', 'muted', 'No channels with this tag.'));
+    return;
+  }
+
   if (state.favorites.length === 0) {
     const empty = h('div', 'empty-state');
     empty.appendChild(h('p', 'empty-title', 'No channels yet'));
@@ -232,7 +325,7 @@ function renderDashboard(): void {
     return;
   }
 
-  for (const entry of buildDashboard(state.favorites, state.results)) {
+  for (const entry of buildDashboard(visibleFavorites(), state.results)) {
     const card = h('article', 'channel-card');
     const name = channelDisplayName(entry.channel);
 
@@ -244,6 +337,11 @@ function renderDashboard(): void {
     titles.appendChild(h('h3', 'card-name', name));
     const sub = entry.loaded && entry.error === undefined ? `${entry.videoCount} in feed` : '';
     titles.appendChild(h('span', 'muted small', sub));
+    if (entry.channel.tags?.length) {
+      const tagRow = h('div', 'tag-list');
+      for (const tag of entry.channel.tags) tagRow.appendChild(h('span', 'tag-chip small', tag));
+      titles.appendChild(tagRow);
+    }
     head.appendChild(titles);
     card.appendChild(head);
 
@@ -296,6 +394,7 @@ function renderChannelList(): void {
     const info = h('div', 'channel-info');
     info.appendChild(h('span', 'channel-name', channelDisplayName(fav)));
     info.appendChild(h('span', 'muted small', fav.id));
+    info.appendChild(renderTagEditor(fav));
     li.appendChild(info);
 
     const status = state.statuses.get(fav.id);
@@ -338,7 +437,7 @@ function renderChannelList(): void {
 function renderFilter(): void {
   el.filter.textContent = '';
   el.filter.appendChild(new Option('All channels', 'all'));
-  for (const fav of state.favorites) {
+  for (const fav of visibleFavorites()) {
     el.filter.appendChild(new Option(channelDisplayName(fav), fav.id));
   }
   if ([...el.filter.options].some((o) => o.value === state.filter)) {
@@ -385,7 +484,7 @@ function renderVideoCard(video: Video & { isNew: boolean }): HTMLElement {
 
 function renderVideos(): void {
   el.videos.textContent = '';
-  const favoriteIds = new Set(state.favorites.map((f) => f.id));
+  const favoriteIds = new Set(visibleFavorites().map((f) => f.id));
   const merged = mergeVideos(
     [...state.results.values()].filter((r) => favoriteIds.has(r.channelId)),
   );
@@ -424,6 +523,7 @@ function renderStatuses(): void {
 }
 
 function renderAll(): void {
+  renderTagBar();
   renderDashboard();
   renderChannelList();
   renderFilter();
@@ -524,6 +624,15 @@ el.form.addEventListener('submit', async (event) => {
 });
 
 // ---------- API key settings ----------
+
+el.apiHelpBtn.addEventListener('click', () => {
+  if (!el.apiHelp.open) el.apiHelp.showModal();
+});
+el.apiHelpClose.addEventListener('click', () => el.apiHelp.close());
+// Clicks on the backdrop hit the dialog element itself, not its content box.
+el.apiHelp.addEventListener('click', (event) => {
+  if (event.target === el.apiHelp) el.apiHelp.close();
+});
 
 function renderApiKeyStatus(): void {
   el.apiKeyStatus.textContent = state.apiKey ? 'Key saved in this browser.' : 'No key saved yet.';

@@ -31,6 +31,8 @@
     </header>
 
     <main class="content">
+      <nav id="tag-bar" class="tag-bar" aria-label="Filter by tag" hidden></nav>
+
       <section id="view-dashboard" class="view" aria-label="Dashboard">
         <div id="dashboard" class="dashboard-grid"></div>
       </section>
@@ -48,7 +50,10 @@
 
       <section id="view-channels" class="view" aria-label="Channels" hidden>
         <section class="panel">
-          <h2>YouTube API key</h2>
+          <h2 class="panel-title">
+            YouTube API key
+            <button id="api-help-btn" class="help-btn" type="button" aria-label="How to get a YouTube API key" aria-haspopup="dialog">?</button>
+          </h2>
           <p class="muted small">
             Videos are loaded with your own free YouTube Data API v3 key. It is stored only in this
             browser. Create one in the
@@ -103,6 +108,61 @@
         <footer class="player-foot">
           <a id="player-open" class="btn ghost small" target="_blank">Open on YouTube</a>
         </footer>
+      </div>
+    </dialog>
+
+    <dialog id="api-help" class="dialog" aria-labelledby="api-help-title">
+      <div class="dialog-box">
+        <header class="dialog-head">
+          <h2 id="api-help-title" class="dialog-title">How to get a YouTube API key</h2>
+          <button id="api-help-close" class="btn ghost small" type="button">Close</button>
+        </header>
+        <div class="dialog-body">
+          <p class="muted">
+            my-tube reads channel data through the free YouTube Data API. You create a key
+            in your own Google account, so the quota and the key stay yours. It takes about five minutes.
+          </p>
+          <ol class="help-steps">
+            <li>
+              <strong>Open the Google Cloud console</strong> and sign in with your Google account:
+              <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">console.cloud.google.com</a>.
+              Select a project from the top bar, or create one with <em>New project</em>.
+            </li>
+            <li>
+              <strong>Enable the API.</strong> Go to <em>APIs &amp; Services → Library</em>, search for
+              <em>YouTube Data API v3</em>, open it, and click <em>Enable</em>.
+            </li>
+            <li>
+              <strong>Create the key.</strong> Go to <em>APIs &amp; Services → Credentials</em>, click
+              <em>Create credentials → API key</em>, and copy the key that appears.
+            </li>
+            <li>
+              <strong>Restrict the key</strong> (recommended). Click the key to edit it, then:
+              <ul>
+                <li><em>API restrictions:</em> choose <em>Restrict key</em> and select only <em>YouTube Data API v3</em>.</li>
+                <li>
+                  <em>Website restrictions:</em> add <code>https://&lt;your-user&gt;.github.io/*</code>, for example
+                  <code>https://etnt.github.io/*</code>. Use the site address only, not the project path.
+                  For local testing, also add <code>http://localhost:5173/*</code>.
+                </li>
+              </ul>
+            </li>
+            <li>
+              <strong>Paste the key</strong> into the field above and click <em>Save key</em>.
+              Changes to restrictions can take a few minutes to apply.
+            </li>
+          </ol>
+          <h3 class="help-subtitle">If something fails</h3>
+          <ul class="help-list">
+            <li><strong>&ldquo;Permission denied&rdquo;</strong>: the API is not enabled, or <em>YouTube Data API v3</em> is missing from the key&rsquo;s API restrictions (step 2 or 4).</li>
+            <li><strong>&ldquo;not allowed on this site&rdquo;</strong>: the website restriction does not match the address in your browser (step 4).</li>
+            <li><strong>&ldquo;Daily quota reached&rdquo;</strong>: the quota resets at midnight Pacific time.</li>
+          </ul>
+          <p class="muted small">
+            The key is stored only in this browser. Google may show a banner about an OAuth consent
+            screen; you can ignore it, because this app uses a plain API key.
+          </p>
+        </div>
       </div>
     </dialog>
 

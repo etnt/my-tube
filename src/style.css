@@ -591,6 +591,219 @@ select:focus {
   gap: 0.45rem;
 }
 
+/* ---------- Tags ---------- */
+
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+}
+
+.tag-filter {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.tag-filter:hover {
+  color: var(--fg);
+}
+
+.tag-filter[aria-pressed='true'] {
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-2) 16%, transparent);
+  color: var(--fg);
+}
+
+.tag-chip.small {
+  font-size: 0.72rem;
+  padding: 0.1rem 0.5rem;
+}
+
+.tag-remove {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0 0 0 0.1rem;
+}
+
+.tag-remove:hover {
+  color: var(--danger);
+}
+
+.tag-editor {
+  margin-top: 0.5rem;
+}
+
+.tag-form {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.tag-form input[type='text'] {
+  flex: 1 1 12rem;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
+
+/* ---------- Help dialog and help button ---------- */
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.help-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.dialog {
+  width: min(640px, 94vw);
+  max-width: none;
+  max-height: 88vh;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+}
+
+.dialog::backdrop {
+  background: rgba(5, 6, 10, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.dialog[open] {
+  animation: fade-in 0.2s ease;
+}
+
+.dialog-box {
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.dialog-body {
+  padding: 1rem 1.2rem 1.3rem;
+  overflow-y: auto;
+  font-size: 0.93rem;
+}
+
+.dialog-body p {
+  margin: 0 0 0.8rem;
+}
+
+.help-steps {
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.help-steps ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.help-steps a,
+.dialog-body a {
+  color: var(--accent-2);
+}
+
+.help-subtitle {
+  font-size: 0.95rem;
+  margin: 1.1rem 0 0.45rem;
+}
+
+.help-list {
+  padding-left: 1.2rem;
+  margin: 0 0 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.dialog-body code {
+  font-size: 0.85em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 5px;
+  background: var(--surface-2);
+  word-break: break-all;
+}
+
 /* ---------- Video player dialog ---------- */
 
 .player {

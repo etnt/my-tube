@@ -5,6 +5,7 @@ import {
   loadApiKey,
   loadFavorites,
   saveApiKey,
+  setFavoriteTags,
   removeFavorite,
   renameFavorite,
   saveFavorites,
@@ -118,5 +119,17 @@ describe('API key storage', () => {
     expect(loadApiKey(store)).toBe('AIzaKey');
     saveApiKey('   ', store);
     expect(loadApiKey(store)).toBe('');
+  });
+});
+
+describe('favourite tags', () => {
+  it('stores normalised tags and clears them when empty', () => {
+    const store = new MemoryStorage();
+    const start = addFavorite([], { id: 'UC1', name: 'Chan' }, store);
+    const tagged = setFavoriteTags(start, 'UC1', ['  Science ', 'science', 'History'], store);
+    expect(tagged[0]?.tags).toEqual(['Science', 'History']);
+    expect(loadFavorites(store)[0]?.tags).toEqual(['Science', 'History']);
+    const cleared = setFavoriteTags(tagged, 'UC1', [], store);
+    expect(cleared[0]).not.toHaveProperty('tags');
   });
 });

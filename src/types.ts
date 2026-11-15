@@ -2,6 +2,8 @@ export interface FavoriteChannel {
   id: string;
   name: string;
   customLabel?: string;
+  /** User-defined categories, e.g. "Science". */
+  tags?: string[];
   addedAt: string;
 }
 
