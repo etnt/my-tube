@@ -23,6 +23,7 @@
         <button class="tab" type="button" data-view="videos">Videos</button>
         <button class="tab" type="button" data-view="channels">Channels</button>
       </nav>
+      <button id="about-btn" class="help-btn" type="button" aria-label="About my-tube" aria-haspopup="dialog">?</button>
       <div class="actions">
         <span id="last-refreshed" class="status-line" role="status"></span>
         <button id="refresh-btn" class="btn ghost" type="button">Refresh</button>
@@ -89,6 +90,10 @@
         </section>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <a href="https://github.com/etnt/my-tube" target="_blank" rel="noopener noreferrer">Source on GitHub</a>
+    </footer>
 
     <dialog id="player" class="player" aria-labelledby="player-title">
       <div class="player-box">
@@ -161,6 +166,31 @@
           <p class="muted small">
             The key is stored only in this browser. Google may show a banner about an OAuth consent
             screen; you can ignore it, because this app uses a plain API key.
+          </p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="about" class="dialog" aria-labelledby="about-title">
+      <div class="dialog-box">
+        <header class="dialog-head">
+          <h2 id="about-title" class="dialog-title">About my-tube</h2>
+          <button id="about-close" class="btn ghost small" type="button">Close</button>
+        </header>
+        <div class="dialog-body">
+          <p>
+            my-tube is a personal dashboard for your favourite YouTube channels. Add the channels
+            you follow and see how long ago each one last uploaded, along with the latest videos
+            in one feed.
+          </p>
+          <ul class="help-list">
+            <li><strong>Dashboard:</strong> one card per channel, sorted by the most recent upload.</li>
+            <li><strong>Videos:</strong> the merged feed of recent uploads, with NEW markers since your last visit.</li>
+            <li><strong>Channels:</strong> add or remove channels, tag them (e.g. Science, History), and save your YouTube API key.</li>
+          </ul>
+          <p class="muted small">
+            It runs entirely in your browser and stores your data locally. Nothing is sent to a server
+            except requests to the YouTube Data API, which uses your own API key.
           </p>
         </div>
       </div>

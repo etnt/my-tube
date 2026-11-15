@@ -59,6 +59,9 @@ const el = {
   apiHelpBtn: document.getElementById('api-help-btn') as HTMLButtonElement,
   apiHelp: document.getElementById('api-help') as HTMLDialogElement,
   apiHelpClose: document.getElementById('api-help-close') as HTMLButtonElement,
+  aboutBtn: document.getElementById('about-btn') as HTMLButtonElement,
+  about: document.getElementById('about') as HTMLDialogElement,
+  aboutClose: document.getElementById('about-close') as HTMLButtonElement,
   filter: document.getElementById('channel-filter') as HTMLSelectElement,
   videoCount: document.getElementById('video-count') as HTMLElement,
   channels: document.getElementById('channels') as HTMLUListElement,
@@ -624,6 +627,14 @@ el.form.addEventListener('submit', async (event) => {
 });
 
 // ---------- API key settings ----------
+
+el.aboutBtn.addEventListener('click', () => {
+  if (!el.about.open) el.about.showModal();
+});
+el.aboutClose.addEventListener('click', () => el.about.close());
+el.about.addEventListener('click', (event) => {
+  if (event.target === el.about) el.about.close();
+});
 
 el.apiHelpBtn.addEventListener('click', () => {
   if (!el.apiHelp.open) el.apiHelp.showModal();
