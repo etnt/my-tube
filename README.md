@@ -9,7 +9,7 @@ that you can host on GitHub Pages. All your data stays in your browser.
 
 You'll find it here: [https://etnt.github.io/my-tube/](https://etnt.github.io/my-tube/)
 
-See also a demo [here](https://youtu.be/6cL3xw7DGgo?si=tPC07mwMe0DE8_3i)
+See also a demo [here](https://youtu.be/w4ZNnzd1mJo?si=9W2CvAS51cA5bd8q)
 
 ## Screenshots
 
