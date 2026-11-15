@@ -14,7 +14,6 @@ See also a demo [here](https://youtu.be/w4ZNnzd1mJo?si=9W2CvAS51cA5bd8q)
 ## Screenshots
 
 <a href="screenshots/dashboard.jpeg"><img src="screenshots/dashboard.jpeg" alt="Dashboard screenshot" width="19%"></a>
-<a href="screenshots/popup.jpeg"><img src="screenshots/popup.jpeg" alt="Pop-Up screenshot" width="19%"></a>
 <a href="screenshots/all_videos.jpeg"><img src="screenshots/all_videos.jpeg" alt="All videos screenshot" width="19%"></a>
 <a href="screenshots/channels.jpeg"><img src="screenshots/channels.jpeg" alt="Channels screenshot" width="19%"></a>
 
