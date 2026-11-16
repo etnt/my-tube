@@ -57,6 +57,14 @@ Any of these work:
 
 Use **Rename** to give a channel a shorter label.
 
+## Favourite videos
+
+Click the heart on a video card, or in the video pop-up, to save it as a
+favourite. Filled red means saved. On the Videos tab, **Favourites** shows only
+saved videos, and the Channel and Tag filters still apply. Saved videos are
+stored as copies in your browser, so they stay available even after they leave
+the latest-uploads feed.
+
 ## Tags
 
 In **Channels**, add one or more tags to a channel (comma-separated, for example

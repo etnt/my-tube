@@ -6,6 +6,9 @@ import {
   loadFavorites,
   saveApiKey,
   setFavoriteTags,
+  FAV_VIDEOS_KEY,
+  loadFavoriteVideos,
+  toggleFavoriteVideo,
   removeFavorite,
   renameFavorite,
   saveFavorites,
@@ -131,5 +134,41 @@ describe('favourite tags', () => {
     expect(loadFavorites(store)[0]?.tags).toEqual(['Science', 'History']);
     const cleared = setFavoriteTags(tagged, 'UC1', [], store);
     expect(cleared[0]).not.toHaveProperty('tags');
+  });
+});
+
+describe('favourite videos', () => {
+  const video = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    channelId: 'UC1234567890123456789012',
+    title: `Video ${id}`,
+    published: '2024-05-01T10:00:00Z',
+    url: `https://www.youtube.com/watch?v=${id}`,
+    ...extra,
+  });
+
+  it('toggles a video on and off and persists the change', () => {
+    const store = new MemoryStorage();
+    const on = toggleFavoriteVideo([], video('aaaaaaaaaaa'), store);
+    expect(on.map((v) => v.id)).toEqual(['aaaaaaaaaaa']);
+    expect(loadFavoriteVideos(store).map((v) => v.id)).toEqual(['aaaaaaaaaaa']);
+    const off = toggleFavoriteVideo(on, video('aaaaaaaaaaa'), store);
+    expect(off).toEqual([]);
+    expect(loadFavoriteVideos(store)).toEqual([]);
+  });
+
+  it('stores a clean snapshot without transient flags', () => {
+    const store = new MemoryStorage();
+    const saved = toggleFavoriteVideo([], video('bbbbbbbbbbb', { isNew: true }), store);
+    expect(saved[0]).not.toHaveProperty('isNew');
+  });
+
+  it('drops malformed records when loading', () => {
+    const store = new MemoryStorage();
+    store.setItem(
+      FAV_VIDEOS_KEY,
+      JSON.stringify([video('ccccccccccc'), { id: 42 }, { ...video('ddddddddddd'), published: 'not a date' }, null]),
+    );
+    expect(loadFavoriteVideos(store).map((v) => v.id)).toEqual(['ccccccccccc']);
   });
 });

@@ -11,6 +11,7 @@
   --warn: #fbbf24;
   --info: #22d3ee;
   --danger: #f87171;
+  --fav: #e11d48;
 }
 
 :root[data-theme='dark'] {
@@ -589,6 +590,48 @@ select:focus {
 .row-actions {
   display: flex;
   gap: 0.45rem;
+}
+
+/* ---------- Favourite videos ---------- */
+
+.heart-btn {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s, background 0.15s;
+}
+
+.heart-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.heart-btn:hover {
+  color: var(--fav);
+  background: var(--hover);
+  transform: scale(1.08);
+}
+
+.heart-btn[aria-pressed='true'] {
+  color: var(--fav);
+}
+
+.video-line .heart-btn {
+  margin-left: auto;
+}
+
+.fav-toggle[aria-pressed='true'] {
+  color: #fff;
+  background: var(--fav);
+  border-color: transparent;
 }
 
 /* ---------- Tag dropdown (Videos toolbar) ---------- */

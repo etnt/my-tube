@@ -1,4 +1,4 @@
-import type { FavoriteChannel } from './types';
+import type { FavoriteChannel, Video } from './types';
 import { normalizeTags } from './tags';
 
 export const FAVORITES_KEY = 'mytube:favorites:v1';
@@ -159,4 +159,71 @@ export function saveApiKey(key: string, storage: Storage = localStorage): void {
   } catch {
     // storage unavailable: the key lasts only for this page load
   }
+}
+
+export const FAV_VIDEOS_KEY = 'mytube:favVideos:v1';
+
+/**
+ * Keep a well-formed video record and drop everything else. Only the fields
+ * the app uses are copied, so transient flags such as isNew are never stored.
+ */
+export function sanitizeVideo(value: unknown): Video | null {
+  if (value === null || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const { id, channelId, title, published, url } = v;
+  if (
+    typeof id !== 'string' ||
+    typeof channelId !== 'string' ||
+    typeof title !== 'string' ||
+    typeof published !== 'string' ||
+    typeof url !== 'string' ||
+    Number.isNaN(Date.parse(published))
+  ) {
+    return null;
+  }
+  return {
+    id,
+    channelId,
+    title,
+    published,
+    url,
+    ...(typeof v.thumbnail === 'string' ? { thumbnail: v.thumbnail } : {}),
+    ...(typeof v.channelName === 'string' ? { channelName: v.channelName } : {}),
+  };
+}
+
+/** Favourite videos are stored as snapshots, so they survive after leaving the latest-uploads feed. */
+export function loadFavoriteVideos(storage: Storage = localStorage): Video[] {
+  try {
+    const raw = storage.getItem(FAV_VIDEOS_KEY);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(sanitizeVideo).filter((v): v is Video => v !== null);
+  } catch {
+    return [];
+  }
+}
+
+export function saveFavoriteVideos(videos: Video[], storage: Storage = localStorage): void {
+  try {
+    storage.setItem(FAV_VIDEOS_KEY, JSON.stringify(videos));
+  } catch {
+    // storage unavailable: favourites last for this page load only
+  }
+}
+
+/** Add the video as a favourite, or remove it if it already is one. */
+export function toggleFavoriteVideo(
+  videos: Video[],
+  video: Video,
+  storage: Storage = localStorage,
+): Video[] {
+  const exists = videos.some((v) => v.id === video.id);
+  const snapshot = sanitizeVideo(video);
+  let next = videos;
+  if (exists) next = videos.filter((v) => v.id !== video.id);
+  else if (snapshot) next = [...videos, snapshot];
+  saveFavoriteVideos(next, storage);
+  return next;
 }

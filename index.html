@@ -57,6 +57,9 @@
               <option value="all">All tags</option>
             </select>
           </div>
+          <button id="fav-only-btn" class="btn ghost small fav-toggle" type="button" aria-pressed="false">
+            Favourites
+          </button>
           <span id="video-count" class="status-line"></span>
         </div>
         <div id="videos" class="video-grid"></div>
@@ -112,6 +115,7 @@
       <div class="player-box">
         <header class="player-head">
           <h2 id="player-title" class="player-title"></h2>
+          <button id="player-fav" class="heart-btn" type="button" aria-pressed="false" aria-label="Add to favourites"></button>
           <button id="player-close" class="btn ghost small" type="button">Close</button>
         </header>
         <div class="player-frame">

@@ -3,12 +3,14 @@ import {
   addFavorite,
   getLastVisit,
   loadApiKey,
+  loadFavoriteVideos,
   loadFavorites,
   removeFavorite,
   renameFavorite,
   saveApiKey,
   setFavoriteTags,
   setLastVisit,
+  toggleFavoriteVideo,
 } from './storage';
 import { filterByChannel, markNew, mergeVideos } from './merge';
 import { buildDashboard } from './dashboard';
@@ -32,6 +34,12 @@ const state = {
   filter: 'all' as string,
   view: 'dashboard' as View,
   apiKey: '' as string,
+  /** Favourite videos as saved snapshots, newest first when shown. */
+  favVideos: [] as Video[],
+  /** When true, the Videos page shows only favourite videos. */
+  favOnly: false,
+  /** The video open in the player dialog, if any. */
+  playerVideo: null as Video | null,
   /** Tag used to filter channels on the dashboard and videos; null shows all. */
   tagFilter: null as string | null,
   loading: false,
@@ -74,6 +82,8 @@ const el = {
   playerFrame: document.getElementById('player-frame') as HTMLIFrameElement,
   playerOpen: document.getElementById('player-open') as HTMLAnchorElement,
   playerClose: document.getElementById('player-close') as HTMLButtonElement,
+  playerFav: document.getElementById('player-fav') as HTMLButtonElement,
+  favOnlyBtn: document.getElementById('fav-only-btn') as HTMLButtonElement,
 };
 
 /** Small DOM helper: creates an element with optional class and text. */
@@ -87,6 +97,75 @@ function h<K extends keyof HTMLElementTagNameMap>(
   if (text !== undefined) node.textContent = text;
   return node;
 }
+
+// ---------- Favourite videos ----------
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const HEART_PATH =
+  'M12 21s-7.5-4.6-9.6-9.1C.9 8.6 2.6 5 6.1 5c2 0 3.4 1.1 4.2 2.3h.2C11.3 6.1 12.7 5 14.7 5c3.5 0 5.2 3.6 3.7 6.9C19.5 16.4 12 21 12 21z';
+
+function heartSvg(filled: boolean): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', HEART_PATH);
+  if (filled) {
+    path.setAttribute('fill', 'currentColor');
+  } else {
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'currentColor');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-linejoin', 'round');
+  }
+  svg.appendChild(path);
+  return svg;
+}
+
+/** Draws the heart in the button and sets its state for assistive tech. */
+function setHeartButton(btn: HTMLButtonElement, filled: boolean, title: string): void {
+  btn.textContent = '';
+  btn.appendChild(heartSvg(filled));
+  btn.setAttribute('aria-pressed', String(filled));
+  btn.setAttribute('aria-label', title);
+  btn.title = title;
+}
+
+function isFavoriteVideo(id: string): boolean {
+  return state.favVideos.some((v) => v.id === id);
+}
+
+function heartTitle(filled: boolean, video: Video): string {
+  return filled ? `Remove "${video.title}" from favourites` : `Add "${video.title}" to favourites`;
+}
+
+function toggleFavoriteVideoFor(video: Video): void {
+  state.favVideos = toggleFavoriteVideo(state.favVideos, video);
+  renderAll();
+}
+
+function syncPlayerHeart(): void {
+  const video = state.playerVideo;
+  if (!video) return;
+  const filled = isFavoriteVideo(video.id);
+  setHeartButton(el.playerFav, filled, heartTitle(filled, video));
+}
+
+function renderFavOnlyButton(): void {
+  el.favOnlyBtn.setAttribute('aria-pressed', String(state.favOnly));
+  const count = state.favVideos.length;
+  el.favOnlyBtn.textContent = `Favourites (${count})`;
+}
+
+el.playerFav.addEventListener('click', () => {
+  if (state.playerVideo) toggleFavoriteVideoFor(state.playerVideo);
+});
+
+el.favOnlyBtn.addEventListener('click', () => {
+  state.favOnly = !state.favOnly;
+  renderAll();
+});
 
 function relativeDate(iso: string): string {
   const then = Date.parse(iso);
@@ -129,6 +208,8 @@ const VIDEO_ID_RE = /^[A-Za-z0-9_-]{11}$/;
 
 /** Opens the video in an in-app dialog using YouTube's privacy-enhanced embed. */
 function openPlayer(video: Video): void {
+  state.playerVideo = video;
+  syncPlayerHeart();
   el.playerTitle.textContent = video.title;
   setSafeLink(el.playerOpen, video.url);
   el.playerOpen.target = '_blank';
@@ -470,6 +551,12 @@ function renderVideoCard(video: Video & { isNew: boolean }): HTMLElement {
   const line = h('div', 'video-line');
   line.appendChild(h('span', 'video-date', relativeDate(video.published)));
   if (video.isNew) line.appendChild(h('span', 'new-badge', 'NEW'));
+  const favorite = isFavoriteVideo(video.id);
+  const heart = h('button', 'heart-btn');
+  heart.type = 'button';
+  setHeartButton(heart, favorite, heartTitle(favorite, video));
+  heart.addEventListener('click', () => toggleFavoriteVideoFor(video));
+  line.appendChild(heart);
   meta.appendChild(line);
 
   card.appendChild(meta);
@@ -478,16 +565,25 @@ function renderVideoCard(video: Video & { isNew: boolean }): HTMLElement {
 
 function renderVideos(): void {
   el.videos.textContent = '';
-  const favoriteIds = new Set(visibleFavorites().map((f) => f.id));
-  const merged = mergeVideos(
-    [...state.results.values()].filter((r) => favoriteIds.has(r.channelId)),
-  );
-  const filtered = filterByChannel(merged, state.filter);
+  const visibleIds = new Set(visibleFavorites().map((f) => f.id));
+  let source: Video[];
+  if (state.favOnly) {
+    // Favourites are saved snapshots, so they stay visible after leaving the feed.
+    const newestFirst = [...state.favVideos].sort((a, b) => Date.parse(b.published) - Date.parse(a.published));
+    source = newestFirst.filter((v) => state.tagFilter === null || visibleIds.has(v.channelId));
+  } else {
+    source = mergeVideos([...state.results.values()].filter((r) => visibleIds.has(r.channelId)));
+  }
+  const filtered = filterByChannel(source, state.filter);
   const marked = markNew(filtered, state.previousVisit);
   el.videoCount.textContent = `${filtered.length} video${filtered.length === 1 ? '' : 's'}`;
+  renderFavOnlyButton();
 
   if (filtered.length === 0) {
-    el.videos.appendChild(h('p', 'muted', 'No videos yet. Add a channel in the Channels tab.'));
+    const message = state.favOnly
+      ? 'No favourite videos yet. Click the heart on a video to save it here.'
+      : 'No videos yet. Add a channel in the Channels tab.';
+    el.videos.appendChild(h('p', 'muted', message));
     return;
   }
   for (const video of marked) {
@@ -523,6 +619,7 @@ function renderAll(): void {
   renderFilter();
   renderVideos();
   renderStatuses();
+  syncPlayerHeart();
 }
 
 async function refreshAll(): Promise<void> {
@@ -694,6 +791,7 @@ document.addEventListener('visibilitychange', () => {
 // ---------- Startup ----------
 
 state.favorites = loadFavorites();
+state.favVideos = loadFavoriteVideos();
 state.apiKey = loadApiKey();
 state.previousVisit = getLastVisit();
 renderApiKeyStatus();
